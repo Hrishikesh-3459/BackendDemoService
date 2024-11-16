@@ -4,7 +4,7 @@
   "description": "BackendDemoService for Luddy Hackathon",
   "main": "dist/app.js",
   "scripts": {
-    "start": "tsc && node dist/app.js",
+    "start": "nodemon",
     "lint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -20,6 +20,10 @@
     "typescript-eslint": "^8.14.0"
   },
   "dependencies": {
-    "express": "^4.17.1"
+    "@types/mongoose": "^5.11.96",
+    "express": "^4.17.1",
+    "mongodb": "^6.10.0",
+    "mongoose": "^8.8.1",
+    "nodemon": "^3.1.7"
   }
 }
