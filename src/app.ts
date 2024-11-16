@@ -6,15 +6,20 @@ const port = 3000;
 
 app.use(express.json());
 
-const MONGO_URL = "mongodb: //127.0.0.1:27017";
-mongoose
-  .connect(MONGO_URL, {
-    dbName: "node-typescript-app",
-  })
-  .then(() => {
-    console.log("Database connected");
-  })
-  .catch((error) => console.log(error));
+const MONGO_URL =
+  "mongodb+srv://hrishikeshmm01:eYX7L21jgfJysC7s@cluster0.c8zro.mongodb.net/";
+
+mongoose.Promise = Promise;
+mongoose.connect(MONGO_URL);
+mongoose.connection.on("error", (error: Error) => console.log(error));
+// mongoose
+//   .connect(MONGO_URL, {
+//     dbName: "node-typescript-app",
+//   })
+//   .then(() => {
+//     console.log("Database connected");
+//   })
+//   .catch((error) => console.log(error));
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
