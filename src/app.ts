@@ -6,7 +6,8 @@ const port = 3000;
 
 app.use(express.json());
 
-const connectionString = "mongodb+srv://Nimish:23O8oj4mLw8W0RIh@hackathoncluster.mnld5.mongodb.net/BackendData?retryWrites=true&w=majority";
+const connectionString =
+  "mongodb+srv://Nimish:23O8oj4mLw8W0RIh@hackathoncluster.mnld5.mongodb.net/BackendData?retryWrites=true&w=majority";
 
 const options = {
   autoIndex: false,
@@ -28,9 +29,8 @@ mongoose
     console.error("Database connection error:", err);
   });
 
-
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.use("/api/v1", router);
+app.use("/api/v1", router());
