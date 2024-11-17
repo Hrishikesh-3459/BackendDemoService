@@ -6,27 +6,31 @@ const port = 3000;
 
 app.use(express.json());
 
-const MONGO_URL =
-  "mongodb+srv://hrishikeshmm01:eYX7L21jgfJysC7s@cluster0.c8zro.mongodb.net/";
+const connectionString = "mongodb+srv://Nimish:23O8oj4mLw8W0RIh@hackathoncluster.mnld5.mongodb.net/BackendData?retryWrites=true&w=majority";
 
-mongoose.Promise = Promise;
-mongoose.connect(MONGO_URL);
-mongoose.connection.on("error", (error: Error) => console.log(error));
-// mongoose
-//   .connect(MONGO_URL, {
-//     dbName: "node-typescript-app",
-//   })
-//   .then(() => {
-//     console.log("Database connected");
-//   })
-//   .catch((error) => console.log(error));
+const options = {
+  autoIndex: false,
+  maxPoolSize: 10,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 45000,
+  family: 4,
+};
+
+mongoose
+  .connect(connectionString, options)
+  .then(() => {
+    console.log("Database connection successful");
+    app.listen(port, () => {
+      console.log(`Express is listening at http://localhost:${port}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Database connection error:", err);
+  });
+
 
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-app.use("/dummy", router);
-
-app.listen(port, () => {
-  return console.log(`Express is listening at http://localhost:${port}`);
-});
+app.use("/api/v1", router);

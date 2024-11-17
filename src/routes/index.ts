@@ -1,12 +1,12 @@
 import express from "express";
-import * as EmployeeController from "../controllers/EmployeeController";
+import * as ProjectController from "../controllers/ProjectController";
 
 const router = express.Router();
 
-router.get("/employee", EmployeeController.getAllEmployees);
-router.get("/employee/:id", EmployeeController.getEmployee);
-router.post("/employee", EmployeeController.createEmployee);
-router.put("/employee/:id", EmployeeController.updateEmployee);
-router.delete("/employee/:id", EmployeeController.deleteEmployee);
+router.get("/projects", ProjectController.getAllProjects);
+router.post("/project", ProjectController.createProject);
+router.get("/project/:text", ProjectController.getProject);
+router.put("/project/:text", ProjectController.updateProject);
+router.delete("/project/:text", ProjectController.deleteProject);
 
 export default router;
