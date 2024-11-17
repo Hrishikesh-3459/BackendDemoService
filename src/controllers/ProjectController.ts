@@ -6,7 +6,13 @@ export const getAllProjects = async (
   response: express.Response
 ) => {
   try {
-    const projects = await ProjectModel.find();
+    const { role, id } = request.user;
+
+    const projects =
+      role === "admin"
+        ? await ProjectModel.find()
+        : await ProjectModel.find({ ownerId: id });
+
     return response.status(200).json({ data: projects });
   } catch (error) {
     console.log(error);
@@ -20,8 +26,8 @@ export const getProject = async (
 ) => {
   try {
     const { text } = request.params;
-    const searchText = String(text)
-
+    const user = request.user;
+    const searchText = String(text);
     const project = await ProjectModel.findOne({
       $or: [
         { productName: { $regex: searchText, $options: "i" } },
@@ -33,10 +39,17 @@ export const getProject = async (
       return response.status(404).json({ message: "Project not found" });
     }
 
+    const isAdmin = user.role === "admin";
+    const isOwner = project.ownerId?.toString() === user.id;
+
+    if (!isAdmin && !isOwner) {
+      return response.status(403).json({ message: "Access denied" });
+    }
+
     return response.status(200).json({ data: project });
   } catch (error) {
-    console.log(error);
-    return response.sendStatus(400);
+    console.error("Error fetching project:", error);
+    return response.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -46,12 +59,15 @@ export const createProject = async (
 ) => {
   try {
     const { productName, repositoryName, details } = request.body;
+    const { id } = request.user;
+
     const project = new ProjectModel({
       productName,
       repositoryName,
       details,
+      ownerId: id,
     });
-    
+
     await project.save();
     return response.status(201).json({ message: "Project Created", data: project });
   } catch (error) {
@@ -67,15 +83,18 @@ export const updateProject = async (
   try {
     const { text } = request.params;
     const { details } = request.body;
-    const searchText = String(text)
+    const { role, id } = request.user;
+    const searchText = String(text);
+
     const project = await ProjectModel.findOne({
       $or: [
         { productName: { $regex: searchText, $options: "i" } },
         { repositoryName: { $regex: searchText, $options: "i" } },
       ],
     });
-    if (!project) {
-      return response.status(404).json({ message: "Project not found" });
+
+    if (!project || (role !== "admin" && project.ownerId.toString() !== id)) {
+      return response.status(403).json({ message: "Access denied" });
     }
 
     project.details = details;
@@ -96,7 +115,8 @@ export const deleteProject = async (
 ) => {
   try {
     const { text } = request.params;
-    const searchText = String(text)
+    const { role, id } = request.user;
+    const searchText = String(text);
 
     const project = await ProjectModel.findOne({
       $or: [
@@ -105,9 +125,11 @@ export const deleteProject = async (
       ],
     });
 
-    if (!project) {
-      return response.status(404).json({ message: "Project not found" });
+    if (!project || (role !== "admin" && project.ownerId.toString() !== id)) {
+      return response.status(403).json({ message: "Access denied" });
     }
+
+    await project.deleteOne();
 
     return response.status(200).json({ message: "Project Deleted" });
   } catch (error) {

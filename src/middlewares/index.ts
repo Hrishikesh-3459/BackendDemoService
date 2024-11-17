@@ -1,28 +1,34 @@
-import express from "express";
-import { get, merge } from "lodash";
+import jwt from "jsonwebtoken";
+import { Request, Response, NextFunction } from "express";
 
-import { getUserBySessionToken } from "../db/users";
+const secretKey = "LuddyAuth";
 
-export const isAuthenticated = async (
-  req: express.Request,
-  res: express.Response,
-  next: express.NextFunction
-) => {
-  try {
-    const sessionToken = req.cookies["LuddyAuth"];
-    if (sessionToken) {
-      return res.sendStatus(400);
-    }
-    const existingUser = await getUserBySessionToken(sessionToken);
-    if (!existingUser) {
-      return res.sendStatus(403);
-    }
+interface DecodedToken {
+  id: string;
+  role: "user" | "admin";
+}
 
-    merge(req, { identity: existingUser });
-
-    next();
-  } catch (error) {
-    console.log(error);
-    return res.sendStatus(400);
+export const authenticate = (req: Request, res: Response, next: NextFunction) => {
+  const token = req.header("Authorization")?.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
   }
+
+  try {
+    const user = jwt.verify(token, secretKey) as DecodedToken;
+    req.user = user;
+    next();
+  } catch (err) {
+    console.log(err);
+    return res.status(401).json({ message: "Invalid token" });
+  }
+};
+
+export const authorize = (role: "user" | "admin") => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!req.user || (req.user.role !== role && req.user.role !== "admin")) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+    next();
+  };
 };

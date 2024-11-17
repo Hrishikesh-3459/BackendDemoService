@@ -1,18 +1,19 @@
 import express from "express";
 import * as ProjectController from "../controllers/ProjectController";
-
-import authentication from "./authentication";
+import * as UserController from "../controllers/UserController";
+import { authenticate, authorize } from "../middlewares/index";
 
 const router = express.Router();
 
-// router.get("/projects", ProjectController.getAllProjects);
-// router.post("/project", ProjectController.createProject);
-// router.get("/project/:text", ProjectController.getProject);
-// router.put("/project/:text", ProjectController.updateProject);
-// router.delete("/project/:text", ProjectController.deleteProject);
+router.post("/signup", UserController.signup);
+router.post("/login", UserController.login);
+
+router.get("/projects", authenticate, ProjectController.getAllProjects);
+router.post("/project", authenticate, authorize("user"), ProjectController.createProject);
+router.get("/project/:text", authenticate, ProjectController.getProject);
+router.put("/project/:text", authenticate, authorize("user"), ProjectController.updateProject);
+router.delete("/project/:text", authenticate, authorize("user"), ProjectController.deleteProject);
 
 export default (): express.Router => {
-  authentication(router);
-
   return router;
 };
